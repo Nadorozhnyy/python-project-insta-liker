@@ -171,9 +171,9 @@ class Bot:
         """
         latest_follower_json = self.get_latest_file(action)
         random_followers = []
-        if not os.path.exists(f'{self.login}'):
-            os.makedirs(f'{self.login}')
-        with open(f'{self.login}/{action}_data.csv', 'a+', encoding='UTF8', newline='') as csv_data:
+        if not os.path.exists(f'csv_data/{self.login}/{action}'):
+            os.makedirs(f'csv_data/{self.login}/{action}')
+        with open(f'csv_data/{self.login}/{action}/{action}_data.csv', 'a+', encoding='UTF8', newline='') as csv_data:
             with open(latest_follower_json, 'r') as json_data:
                 while len(random_followers) < count:
                     csv_list = csv_to_list(csv_data)
@@ -191,11 +191,11 @@ class Bot:
                     else:
                         csv_data.close()
                         self.get_follower_or_following_list(action)
-                        if os.path.exists(f'{self.login}/{action}_{datetime.date.today().strftime("%b-%d-%Y")}.csv'):
+                        if os.path.exists(f'csv_data/{self.login}/{action}/{action}_{datetime.date.today().strftime("%b-%d-%Y")}.csv'):
                             pass
                         else:
-                            os.rename(f'{self.login}/{action}_data.csv',
-                                      f'{self.login}/{action}_{datetime.date.today().strftime("%b-%d-%Y")}.csv')
+                            os.rename(f'csv_data/{self.login}/{action}/{action}_data.csv',
+                                      f'csv_data/{self.login}/{action}/{action}_{datetime.date.today().strftime("%b-%d-%Y")}.csv')
                         break
         return random_followers
 

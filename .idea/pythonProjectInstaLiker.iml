@@ -3,6 +3,8 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/my_venv" />
+      <excludeFolder url="file://$MODULE_DIR$/bot/munchkin_portos" />
+      <excludeFolder url="file://$MODULE_DIR$/bot/csv_data" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
