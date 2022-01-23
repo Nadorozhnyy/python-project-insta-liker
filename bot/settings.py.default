@@ -1,0 +1,56 @@
+
+USERS_DATA = [
+    {'login': '', 'password': ''}
+]
+
+COMMENTS = [
+    'Cute',
+    'Awesome',
+    'So cute',
+    'Lovely',
+    'Nice pic!',
+    'Very lovely',
+    'Cool',
+    'cool',
+    'wow',
+    'WOW',
+    'WOW!!!',
+    'like!',
+    'LIKE!!!:heart_eyes::heart_eyes::heart_eyes:',
+    ':heart_eyes::heart_eyes::heart_eyes:',
+    ':kissing_heart::kissing_heart::kissing_heart:',
+    ':blush::blush::blush:',
+    ':cat::cat::cat:',
+    ':kissing_cat::kissing_cat::kissing_cat:',
+    ':heart_eyes_cat::heart_eyes_cat::heart_eyes_cat:',
+]
+
+FRIENDS_DONT_INCLUDE = []
+
+DONT_LIKE = [
+    "naked",
+    "nsfw",
+    "sex",
+    "sexy",
+    "putin",
+    "bbc",
+    "rt",
+    "news",
+    "politics",
+    "weapon",
+    "death",
+    "covid",
+    "trump",
+    "crime",
+    "помним",
+    "скорбим",
+    "rip"
+]
+
+LIKE = [
+    "munchkin",
+    "cats",
+    "cat",
+    "kitten",
+    "kittens",
+]
