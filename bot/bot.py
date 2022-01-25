@@ -6,14 +6,12 @@ import datetime
 import json
 import os
 import random
-
 import selenium
-from instapy import InstaPy, smart_run
-from selenium.webdriver.firefox import webdriver
-
-from settings import COMMENTS, FRIENDS_DONT_INCLUDE, DONT_LIKE, LIKE
-from pathlib import Path
 import glob
+
+from instapy import InstaPy, smart_run
+from settings import COMMENTS, FRIENDS_DONT_INCLUDE, TAGS_DONT_LIKE, TAGS_TO_LIKE
+from pathlib import Path
 
 try:
     from settings import USERS_DATA
@@ -37,27 +35,37 @@ def flip_coin():
 
 class Bot:
 
-    # get an InstaPy session!
-    # set headless_browser=True to run InstaPy in the background
     def __init__(self, login, password):
         self.login = login
         self.password = password
         self.comments = COMMENTS
-        self.like = LIKE
+        self.like = TAGS_TO_LIKE
         self.home_directory = str(Path.home())
         self.path = f'{self.home_directory}/InstaPy/logs/{login}/relationship_data/{login}'
         self.session = None
 
-    def smart_action(self, action, count=3, comments=True):
+    def action(self, action, count=3, comments=True):
+        """
+        main bot process
+        Three type of action for tags, followers and following
+        :param action:
+        can be tags, follower or following (string) flag to select action
+        :param count:
+        for followers and following - defines counts of photo which be liked
+        :param comments:
+        for followers and following - defines will be comments or not
+        :return:
+        start instapy smart_run
+        """
         try:
             self.delete_cookie()
             self.session = self.open_session()
-            # self.session.browser.delete_cookie(name=self.login)
+            # self.session.browser.delete_cookie(name=self.login) # TODO delete_cookie func built-in in instapy
             with smart_run(self.session):
-                """Настройки бота """
-                # не взаимодествовать с пользователями у которых больше 8500 подписчиков
+                # bots settings
+                # do not interact with users who have more than 8500 subscribers
                 self.session.set_relationship_bounds(enabled=True, max_followers=8500)
-                # установка правил взаимодействия с закрытыми пользователями
+                # setting rules for interaction with private users
                 self.session.set_skip_users(skip_private=False,
                                             private_percentage=100,
                                             skip_no_profile_pic=True,
@@ -69,7 +77,7 @@ class Bot:
                                             dont_skip_business_categories=[],
                                             skip_bio_keyword=[],
                                             mandatory_bio_keywords=[])
-                #  установка пиков взаимодействия в час/день для лайков/комментариев/подписок/обращений к серверу
+                # setting interaction peaks per hour/day for likes/comments/subscriptions/server hits
                 self.session.set_quota_supervisor(enabled=True,
                                                   sleep_after=["likes", "comments_d", "follows", "unfollows",
                                                                "server_calls_h"],
@@ -88,32 +96,27 @@ class Bot:
                                                   peak_server_calls_daily=4700)
                 self.session.set_comments(self.comments)
                 self.session.logger.info(f'Выбрали действие - {action}')
-                self.session.set_dont_like(DONT_LIKE)
+                self.session.set_dont_like(TAGS_DONT_LIKE)
                 self.session.set_dont_include(FRIENDS_DONT_INCLUDE)
+
+                # activity
                 if action == 'tags':
                     self.session.set_do_follow(True, percentage=15)
                     self.session.set_do_comment(enabled=True, percentage=20)
-                    # activity
-                    self.session.like_by_tags(self.like, amount=30, randomize=True)
+                    self.session.like_by_tags(self.like, amount=100, randomize=True)
                 elif action == 'followers' or 'following':
                     if comments:
                         self.session.set_do_comment(enabled=True, percentage=50)
                     self.session.set_do_like(True, percentage=90)
-                    # count - количество случайных пользователей которое берется из списка подписок или подписщиков
                     users_list = self.get_random_users(action=action, count=count)
-                    # activity
-                    '''Amount количество фото которое берется для активности'''
-                    # amount - количество постов пользователя которые будут обрабатываться (485 на 100 меньше чем
-                    # дневное ограничение поделенное на количество случайных пользователей (count)
-                    self.session.like_by_users(users_list, amount=int(485 / count), randomize=False)
+                    # amount=int(515 / count) -
+                    self.session.like_by_users(users_list, amount=int(500 / count), randomize=False)
                 else:
-                    raise Exception('Доступные действия: tags, followers и following')
+                    raise Exception('Available actions: tags, followers и following')
         except selenium.common.exceptions.WebDriverException as ex:
             print(ex)
             pass
 
-
-    # TODO если стандартный процесс работает то удалить
     def delete_cookie(self):
         path_to_log_text = f'{self.home_directory}/InstaPy/logs/{self.login}/{self.login}_cookie.pkl'
         path_to_log = os.path.abspath(path_to_log_text)
@@ -121,6 +124,8 @@ class Bot:
             os.remove(path_to_log)
 
     def open_session(self):
+        # get an InstaPy session!
+        # set headless_browser=True to run InstaPy in the background
         return InstaPy(
             username=self.login,
             password=self.password,
@@ -135,16 +140,15 @@ class Bot:
         elif action == 'following':
             self.session.grab_following(username=self.login, amount="full", live_match=True, store_locally=True)
         else:
-            raise Exception('Доступные действия: tags, followers и following')
+            raise Exception('Available actions: followers и following')
 
     def get_latest_file(self, action):
         """
-        в директории создаваемой IstaPy при формировани json списка подписчиков/подписок ищет самый новый файл
+        search the newest json file list of followers/following in directory creating by InstaPy
         :param action:
-        подписчики(followers)
-        подписки(following)
+        followers or following
         :return:
-        возвращает последний (по дате) json файл со списком подписчиков/подписок
+        return the newest (by date) json file with followers/following list
         """
         if os.path.exists(f'{self.path}/{action}/'):
             for dirpath, dirnames, files in os.walk(f'{self.path}/{action}/'):
@@ -157,23 +161,22 @@ class Bot:
 
     def get_random_users(self, count, action):
         """
-        Эта функция берет три случайных подписчика из списка моих подписчиков, они вносятся в таблицу csv
-        если подписчик уже был в этой таблице то берется следующий.
-        если все подписчики уже были обработаны, создается новый список подписчиков.
-        старый список сохраняется к имени преписывается дата сохранения
+        Take count random users from list of followers/following. They save to csv table, if user already in table
+        take next one. When all users processed func create new list, old list save with date prefix
         :param count:
-        количество случайных пользователей (int)
+        count of random users (int)
         :param action:
-        подписчики(followers)
-        подписки(following)
+        followers or following
         :return:
-        список из трех рандомных подписчиков
+        list of random users 'count' long
         """
         latest_follower_json = self.get_latest_file(action)
         random_followers = []
-        if not os.path.exists(f'csv_data/{self.login}/{action}'):
-            os.makedirs(f'csv_data/{self.login}/{action}')
-        with open(f'csv_data/{self.login}/{action}/{action}_data.csv', 'a+', encoding='UTF8', newline='') as csv_data:
+        path_to_action_folder = f'csv_data/{self.login}/{action}'
+
+        if not os.path.exists(path_to_action_folder):
+            os.makedirs(path_to_action_folder)
+        with open(f'{path_to_action_folder}/{action}_data.csv', 'a+', encoding='UTF8', newline='') as csv_data:
             with open(latest_follower_json, 'r') as json_data:
                 while len(random_followers) < count:
                     csv_list = csv_to_list(csv_data)
@@ -191,14 +194,15 @@ class Bot:
                     else:
                         csv_data.close()
                         self.get_follower_or_following_list(action)
-                        if os.path.exists(f'csv_data/{self.login}/{action}/{action}_{datetime.date.today().strftime("%b-%d-%Y")}.csv'):
+                        if os.path.exists(
+                                f'{path_to_action_folder}/{action}_{datetime.date.today().strftime("%b-%d-%Y")}.csv'):
                             pass
                         else:
-                            os.rename(f'csv_data/{self.login}/{action}/{action}_data.csv',
-                                      f'csv_data/{self.login}/{action}/{action}_{datetime.date.today().strftime("%b-%d-%Y")}.csv')
+                            os.rename(f'{path_to_action_folder}/{action}_data.csv',
+                                      f'{path_to_action_folder}/{action}_{datetime.date.today().strftime("%b-%d-%Y")}.csv')
                         break
         return random_followers
 
 
 if __name__ == '__main__':
-    Bot(**USERS_DATA[1]).smart_action(action=flip_coin(), count=50)
+    Bot(**USERS_DATA[1]).action(action=flip_coin(), count=50)
