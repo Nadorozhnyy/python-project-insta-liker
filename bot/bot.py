@@ -103,14 +103,14 @@ class Bot:
                 if action == 'tags':
                     self.session.set_do_follow(True, percentage=15)
                     self.session.set_do_comment(enabled=True, percentage=20)
-                    self.session.like_by_tags(self.like, amount=100, randomize=True)
+                    self.session.like_by_tags(self.like, amount=250, randomize=True)
                 elif action == 'followers' or 'following':
                     if comments:
-                        self.session.set_do_comment(enabled=True, percentage=50)
+                        self.session.set_do_comment(enabled=True, percentage=15)
                     self.session.set_do_like(True, percentage=90)
                     users_list = self.get_random_users(action=action, count=count)
-                    # amount=int(515 / count) -
-                    self.session.like_by_users(users_list, amount=int(500 / count), randomize=False)
+                    # TODO rename count
+                    self.session.like_by_users(users_list, amount=int(250 / count), randomize=False)
                 else:
                     raise Exception('Available actions: tags, followers и following')
         except selenium.common.exceptions.WebDriverException as ex:
