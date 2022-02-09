@@ -1,0 +1,19 @@
+{
+  "name": "pythonprojectinstaliker",
+  "version": "1.0.0",
+  "description": "insta bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nadorozhnyy/pythonProjectInstaLiker.git"
+  },
+  "author": "nadorozhnyy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Nadorozhnyy/pythonProjectInstaLiker/issues"
+  },
+  "homepage": "https://github.com/Nadorozhnyy/pythonProjectInstaLiker#readme"
+}
