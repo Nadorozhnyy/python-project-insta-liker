@@ -27,7 +27,10 @@ TAGS_DONT_LIKE = [
     "crime",
     "помним",
     "скорбим",
-    "rip"
+    "rip",
+    "rescue",
+    "rescuealert",
+    "alert"
 ]
 
 TAGS_TO_LIKE = [

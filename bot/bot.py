@@ -6,7 +6,6 @@ import datetime
 import json
 import os
 import random
-import selenium
 import glob
 
 from instapy import InstaPy, smart_run
@@ -57,65 +56,63 @@ class Bot:
         :return:
         start instapy smart_run
         """
-        try:
-            self.delete_cookie()
-            self.session = self.open_session()
-            # self.session.browser.delete_cookie(name=self.login) # TODO delete_cookie func built-in in instapy
-            with smart_run(self.session):
-                # bots settings
-                # do not interact with users who have more than 8500 subscribers
-                self.session.set_relationship_bounds(enabled=True, max_followers=8500)
-                # setting rules for interaction with private users
-                self.session.set_skip_users(skip_private=False,
-                                            private_percentage=100,
-                                            skip_no_profile_pic=True,
-                                            no_profile_pic_percentage=100,
-                                            skip_business=False,
-                                            skip_non_business=False,
-                                            business_percentage=100,
-                                            skip_business_categories=[],
-                                            dont_skip_business_categories=[],
-                                            skip_bio_keyword=[],
-                                            mandatory_bio_keywords=[])
-                # setting interaction peaks per hour/day for likes/comments/subscriptions/server hits
-                self.session.set_quota_supervisor(enabled=True,
-                                                  sleep_after=["likes", "comments_d", "follows", "unfollows",
-                                                               "server_calls_h"],
-                                                  sleepyhead=True,
-                                                  stochastic_flow=True,
-                                                  notify_me=True,
-                                                  peak_likes_hourly=57,
-                                                  peak_likes_daily=585,
-                                                  peak_comments_hourly=21,
-                                                  peak_comments_daily=182,
-                                                  peak_follows_hourly=48,
-                                                  peak_follows_daily=None,
-                                                  peak_unfollows_hourly=35,
-                                                  peak_unfollows_daily=402,
-                                                  peak_server_calls_hourly=None,
-                                                  peak_server_calls_daily=4700)
-                self.session.set_comments(self.comments)
-                self.session.logger.info(f'Выбрали действие - {action}')
-                self.session.set_dont_like(TAGS_DONT_LIKE)
-                self.session.set_dont_include(FRIENDS_DONT_INCLUDE)
 
-                # activity
-                if action == 'tags':
-                    self.session.set_do_follow(True, percentage=15)
-                    self.session.set_do_comment(enabled=True, percentage=20)
-                    self.session.like_by_tags(self.like, amount=250, randomize=True)
-                elif action == 'followers' or 'following':
-                    if comments:
-                        self.session.set_do_comment(enabled=True, percentage=15)
-                    self.session.set_do_like(True, percentage=90)
-                    users_list = self.get_random_users(action=action, count=count)
-                    # TODO rename count
-                    self.session.like_by_users(users_list, amount=int(250 / count), randomize=False)
-                else:
-                    raise Exception('Available actions: tags, followers и following')
-        except selenium.common.exceptions.WebDriverException as ex:
-            print(ex)
-            pass
+        self.delete_cookie()
+        self.session = self.open_session()
+        # self.session.browser.delete_cookie(name=self.login) # TODO delete_cookie func built-in in instapy
+        with smart_run(self.session):
+            # bots settings
+            # do not interact with users who have more than 8500 subscribers
+            self.session.set_relationship_bounds(enabled=True, max_followers=8500)
+            # setting rules for interaction with private users
+            self.session.set_skip_users(skip_private=False,
+                                        private_percentage=100,
+                                        skip_no_profile_pic=True,
+                                        no_profile_pic_percentage=100,
+                                        skip_business=False,
+                                        skip_non_business=False,
+                                        business_percentage=100,
+                                        skip_business_categories=[],
+                                        dont_skip_business_categories=[],
+                                        skip_bio_keyword=[],
+                                        mandatory_bio_keywords=[])
+            # setting interaction peaks per hour/day for likes/comments/subscriptions/server hits
+            self.session.set_quota_supervisor(enabled=True,
+                                              sleep_after=["likes", "comments_d", "follows", "unfollows",
+                                                           "server_calls_h"],
+                                              sleepyhead=True,
+                                              stochastic_flow=True,
+                                              notify_me=True,
+                                              peak_likes_hourly=57,
+                                              peak_likes_daily=585,
+                                              peak_comments_hourly=21,
+                                              peak_comments_daily=182,
+                                              peak_follows_hourly=48,
+                                              peak_follows_daily=None,
+                                              peak_unfollows_hourly=35,
+                                              peak_unfollows_daily=402,
+                                              peak_server_calls_hourly=None,
+                                              peak_server_calls_daily=4700)
+            self.session.set_comments(self.comments)
+            self.session.logger.info(f'Выбрали действие - {action}')
+            self.session.set_dont_like(TAGS_DONT_LIKE)
+            self.session.set_dont_include(FRIENDS_DONT_INCLUDE)
+
+            # activity
+            if action == 'tags':
+                self.session.set_do_follow(True, percentage=15)
+                self.session.set_do_comment(enabled=True, percentage=20)
+                self.session.like_by_tags(self.like, amount=250, randomize=True)
+            elif action == 'followers' or 'following':
+                if comments:
+                    self.session.set_do_comment(enabled=True, percentage=15)
+                self.session.set_do_like(True, percentage=90)
+                users_list = self.get_random_users(action=action, count=count)
+                # TODO rename count
+                self.session.like_by_users(users_list, amount=int(250 / count), randomize=False)
+            else:
+                raise Exception('Available actions: tags, followers и following')
+
 
     def delete_cookie(self):
         path_to_log_text = f'{self.home_directory}/InstaPy/logs/{self.login}/{self.login}_cookie.pkl'
